@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract NFTMarketplace {
-    address public paymentTokenAddress;
+    address public paymentToken;
     struct Listing {
         address seller;    
         uint256 price;     
@@ -20,8 +20,8 @@ contract NFTMarketplace {
     ListedNFT[] public allListedNFTs;
     event NFTListed(address indexed nftContract, uint256 indexed tokenId, address seller, uint256 price);
     event NFTBought(address indexed nftContract, uint256 indexed tokenId, address buyer, uint256 price);
-    constructor(address _paymentTokenAddress) {
-        paymentTokenAddress = _paymentTokenAddress;
+    constructor(address _paymentToken) {
+        paymentToken = _paymentToken;
     }
     function listNFT(address nftContract, uint256 tokenId, uint256 price) external {
         IERC721 nft = IERC721(nftContract); 
@@ -42,8 +42,8 @@ contract NFTMarketplace {
     function buyNFT(address nftContract, uint256 tokenId) external {
         Listing memory listedItem = listings[nftContract][tokenId];
         require(listedItem.price > 0, "NFT is not listed for sale");
-        IERC20 paymentToken = IERC20(paymentTokenAddress);
-        require(paymentToken.transferFrom(msg.sender, listedItem.seller, listedItem.price), "Payment failed");
+        IERC20 payToken = IERC20(paymentToken);
+        require(payToken.transferFrom(msg.sender, listedItem.seller, listedItem.price), "Payment failed");
         IERC721(nftContract).transferFrom(address(this), msg.sender, tokenId);
         emit NFTBought(nftContract, tokenId, msg.sender, listedItem.price);
         delete listings[nftContract][tokenId];
